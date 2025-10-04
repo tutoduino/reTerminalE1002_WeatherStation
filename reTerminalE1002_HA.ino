@@ -527,7 +527,7 @@ void loop() {
     display.setCursor(x_ha_box + 5 * ha_box_w / 6 - w / 2, y_ha_box + 70);
     display.print("Room");
     display.setFont(&FreeSans18pt7b);
-    display.getTextBounds(String(Room, 1) + "`", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(String(greenHouseTemperature, 1) + "`", 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + 5 * ha_box_w / 6 - w / 2, y_ha_box + 120);
     display.print(greenHouseTemperature, 1);
     display.write(0x60);
