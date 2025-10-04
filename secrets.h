@@ -1,3 +1,4 @@
+// Add your own secrets in this file
 const char* wifi_ssid = "xxx";
 const char* wifi_password = "xxx";
 const char* ha_url = "http://homeassistant.local:8123/api/states/";
