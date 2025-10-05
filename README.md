@@ -9,6 +9,8 @@ This project transforms the reTerminal E1002 into a multi‑source data station,
 - Presents all information with clear icons and text on the high‑resolution color e‑paper display.
 - Implements deep sleep to save power, with wake‑up triggered by a button press or a timer.
  
-https://tutoduino.fr/reterminal-e1002-arduino-home-assistant/
+More details on this article:
+(French) https://tutoduino.fr/reterminal-e1002-arduino-home-assistant/
+(English) https://tutoduino.fr/en/reterminal-e1002-arduino-ide/
 
 ![reTerminal E1002 display](https://tutoduino.fr/ookoorsa/2025/10/reTerminal-Arduino-EN.jpg)
