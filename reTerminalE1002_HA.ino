@@ -89,6 +89,28 @@ int g_x_start, g_y_start;
 SensirionI2cSht4x sht4x;
 const float sht4xCalibration = -1;  // SHT4x calibration offset
 
+// 3.7 V Li-Ion battery voltage
+const float minVoltage = 3.0;
+const float maxVoltage = 4.0;
+
+/**
+ * @brief Mapp float voltage to % battery charge.
+ * @param x=Battery voltage
+ * @param in_min=Battery min voltage
+ * @param in_max=Battery max voltage
+ * @return % of battery charge.
+ */
+ uint8_t mapFloat(float x, float in_min, float in_max) {
+  float val;
+  val = (x - in_min) * (100) / (in_max - in_min);
+  if (val < 0) {
+    val = 0;
+  } else if (val > 100) {
+    val = 100;
+  }
+  return (uint8_t)val;
+}
+
 /**
  * @brief Fetch temperature from Home Assistant REST API.
  * @param entityId - Home Assistant sensor entity (e.g., "sensor.lumi_lumi_weather_temperature")
@@ -156,10 +178,10 @@ int fetchWeatherData() {
     return -3;
   }
   localTime = doc["current"]["time"].as<String>();
+  D0Code = doc["current"]["weather_code"].as<int>();
   currentTemp = doc["current"]["temperature"].as<int>();
   D0MinTemp = doc["daily"]["temperature_2m_min"][0].as<int>();
   D0MaxTemp = doc["daily"]["temperature_2m_max"][0].as<int>();
-  D0Code = doc["daily"]["weather_code"][0].as<int>();
   D1MinTemp = doc["daily"]["temperature_2m_min"][1].as<int>();
   D1MaxTemp = doc["daily"]["temperature_2m_max"][1].as<int>();
   D1Code = doc["daily"]["weather_code"][1].as<int>();
@@ -324,38 +346,6 @@ float getBatteryVoltage() {
 }
 
 /**
- * @brief Estimate battery percentage from voltage.
- * @return Battery percent, min 0 to max 100.
- */
-int getBatteryPercent() {
-  float batteryVoltage = getBatteryVoltage();
-  if (batteryVoltage > 4.15)
-    return 100;
-  else if (batteryVoltage > 3.96)
-    return 90;
-  else if (batteryVoltage > 3.91)
-    return 80;
-  else if (batteryVoltage > 3.85)
-    return 70;
-  else if (batteryVoltage > 3.80)
-    return 60;
-  else if (batteryVoltage > 3.75)
-    return 50;
-  else if (batteryVoltage > 3.68)
-    return 40;
-  else if (batteryVoltage > 3.58)
-    return 30;
-  else if (batteryVoltage > 3.49)
-    return 20;
-  else if (batteryVoltage > 3.41)
-    return 10;
-  else if (batteryVoltage > 3.30)
-    return 5;
-  else
-    return 0;
-}
-
-/**
  * @brief Arduino setup: serial, display, WiFi, sensors.
  */
 void setup() {
@@ -417,12 +407,18 @@ void loop() {
   float min, max;
   String icon;
   float sht4xTemperature, sht4xHumidity;
+  uint8_t vBatPercentage;
+  float vBat;
 
   // Measure reTerminal internal SHT4 sensor
   uint16_t error = sht4x.measureMediumPrecision(sht4xTemperature, sht4xHumidity);
   sht4xTemperature += sht4xCalibration;
 
-  float batteryVoltage = getBatteryVoltage();
+  // Measure battery voltage
+  vBat = getBatteryVoltage();
+  vBatPercentage = mapFloat(vBat, minVoltage, maxVoltage);
+
+  // Get Bitcoind value
   int btc = getBTC();
 
   // Fetch weather data for current and next 4 days
@@ -564,14 +560,14 @@ void loop() {
     display.drawBitmap(x_battery_box + 10, y_battery_box + 70, epd_bitmap3_allArray[1], 40, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x_battery_box + 50, y_battery_box + 100);
-    display.print(getBatteryPercent());
+    display.print(vBatPercentage);
     display.print(" %");
 
   } while (display.nextPage());
 
   display.hibernate();
   delay(1000);
-  esp_sleep_enable_timer_wakeup(30 * 60 * 1000000);  // 30 minutes sleep
-  Serial1.println("Deep sleep 30min...");
+  esp_sleep_enable_timer_wakeup(60 * 60 * 1000000);  // 60 minutes sleep
+  Serial1.println("Deep sleep 60min...");
   esp_deep_sleep_start();
 }
