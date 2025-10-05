@@ -18,7 +18,6 @@
 #include <FreeSans12pt7b_mod.h>
 #include <FreeSans18pt7b_mod.h>
 #include <FreeSans24pt7b_mod.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
 
 #include <Wire.h>
 #include <SensirionI2cSht4x.h>
