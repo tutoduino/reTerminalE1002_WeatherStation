@@ -4,7 +4,7 @@
  * 
  * - Fetches weather data from Open-Meteo API.
  * - Fetches Home Assistant sensor temperatures via REST API.
- * - Fetches Bitcoin and Ethereum price in USD from CoinGecko.
+ * - Fetches Bitcoin price in USD from CoinGecko.
  * - Displays all data on reTerminal E1002 7.3" color e-paper.
  * - Handles deep sleep and wake-up via button or timer.
  *   https://tutoduino.fr/
@@ -269,7 +269,7 @@ String formatDateFR(String dateStr) {
  */
 int weatherCodeToIcon(int weatherCode) {
   switch (weatherCode) {
-    case 0: return 7;  // Sun
+    case 0: return 8;  // Sun
     case 1:
     case 2: return 3;  // Some clouds
     case 3: return 5;  // Cloudy
@@ -279,25 +279,25 @@ int weatherCodeToIcon(int weatherCode) {
     case 53:
     case 55:
     case 56:
-    case 57: return 7;  // Freezing drizzle
+    case 57: return 7;  // Drizzle
     case 61:
     case 63:
     case 65:
     case 66:
-    case 67: return 6;  // Freezing rain
+    case 67: return 1;  // Rain
     case 71:
     case 73:
     case 75:
     case 77: return 4;  // Snow
     case 80:
     case 81:
-    case 82: return 8;  // Showers
+    case 82: return 6;  // Showers
     case 85:
     case 86: return 4;  // Snow
     case 95:
     case 96:
     case 99: return 0;  // Thunderstorm
-    default: return 5;
+    default: return 5; // Default to Cloudy
   }
 }
 
