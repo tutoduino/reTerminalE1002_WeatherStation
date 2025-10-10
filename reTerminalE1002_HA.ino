@@ -94,7 +94,7 @@ const float sht4xCalibration = -1;  // SHT4x calibration offset
 
 // 3.7 V Li-Ion battery voltage
 const float minVoltage = 3.0;
-const float maxVoltage = 4.0;
+const float maxVoltage = 4.2;
 
 /**
  * @brief Mapp float voltage to % battery charge.
