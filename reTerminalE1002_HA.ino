@@ -26,6 +26,7 @@
 #include "icons_100x100.h"
 #include "icons.h"
 #include "secrets.h"
+#include "language.h"
 
 #define uS_TO_S_FACTOR 1000000ULL /* Conversion factor for micro seconds to seconds */
 
@@ -77,9 +78,7 @@ GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, MAX_HEIGHT(GxEPD2_DRIVER_CLASS)>
 // Global variable for SPI communication
 SPIClass hspi(HSPI);
 
-// French weekday and month names for date formatting on display
-const char *jours[] = { "Dimanche", "Lundi", "Mardi", "Mercredi", "Jeudi", "Vendredi", "Samedi" };
-const char *mois[] = { "Janvier", "Février", "Mars", "Avril", "Mai", "Juin", "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre" };
+
 
 // Global weather variables
 int D0MinTemp, D0MaxTemp, D1MinTemp, D1MaxTemp, D2MinTemp, D2MaxTemp, D3MinTemp, D3MaxTemp, D4MinTemp, D4MaxTemp;
@@ -226,7 +225,7 @@ int getETH() {
  * @param d Day
  * @return Weekday index
  */
-int jourDeLaSemaine(int y, int m, int d) {
+int dayOfTheWeek(int y, int m, int d) {
   if (m < 3) {
     m += 12;
     y -= 1;
@@ -238,6 +237,19 @@ int jourDeLaSemaine(int y, int m, int d) {
 }
 
 /**
+ * @brief Formats ISO date string as US date for display.
+ * @param dateStr "YYYY-MM-DD HH:MM"
+ * @return "Saturday, October 4, 2025" style string.
+ */
+String formatDateEN(String dateStr) {
+  int y = dateStr.substring(0, 4).toInt();
+  int m = dateStr.substring(5, 7).toInt();
+  int d = dateStr.substring(8, 10).toInt();
+  int wday = dayOfTheWeek(y, m, d);
+  return String(String(days[wday]) + ", " + String(months[m - 1]) + " " + String(d) + ", " + String(y));
+}
+
+/**
  * @brief Formats ISO date string as French date for display.
  * @param dateStr "YYYY-MM-DD HH:MM"
  * @return "Samedi 04 Octobre" style string.
@@ -246,8 +258,8 @@ String formatDateFR(String dateStr) {
   int y = dateStr.substring(0, 4).toInt();
   int m = dateStr.substring(5, 7).toInt();
   int d = dateStr.substring(8, 10).toInt();
-  int wday = jourDeLaSemaine(y, m, d);
-  return String(jours[wday]) + " " + (d < 10 ? "0" : "") + String(d) + " " + mois[m - 1];
+  int wday = dayOfTheWeek(y, m, d);
+  return String(days[wday]) + " " + (d < 10 ? "0" : "") + String(d) + " " + months[m - 1];
 }
 
 /**
@@ -297,9 +309,9 @@ void displayForecast(int x, int y, int day, int min, int max, int iconNb) {
   uint16_t w, h;
   display.drawBitmap(x + 30, y + 50, epd_bitmap_allArray[iconNb], 50, 50, GxEPD_BLACK);
   display.setFont(&FreeSans12pt7b);
-  display.getTextBounds(jours[day], x, y, &x1, &y1, &w, &h);
+  display.getTextBounds(days[day], x, y, &x1, &y1, &w, &h);
   display.setCursor(x + 55 - w / 2, y + 40);
-  display.print(jours[day]);
+  display.print(days[day]);
   display.setFont(&FreeSans12pt7b);
   display.getTextBounds(String(max) + "`", x, y, &x1, &y1, &w, &h);
   display.setCursor(x + 55 - w / 2, y + 130);
@@ -462,8 +474,13 @@ void loop() {
     return;
   }
 
-  String dateFR = formatDateFR(localTime);  // French formatted date
-  int today = jourDeLaSemaine(localTime.substring(0, 4).toInt(), localTime.substring(5, 7).toInt(), localTime.substring(8, 10).toInt());
+#if defined(LANGUAGE) && LANGUAGE == FR
+  String date = formatDateFR(localTime);  // French formatted date
+#else
+  String date = formatDateEN(localTime);  // French formatted date
+
+#endif
+  int today = dayOfTheWeek(localTime.substring(0, 4).toInt(), localTime.substring(5, 7).toInt(), localTime.substring(8, 10).toInt());
 
   // Fetch Home Assistant sensor states
   internalTemperatureSensor = getHomeAssistantSensorState("sensor.tutoduino_esp32c6tempsensor_temperature");
@@ -483,9 +500,9 @@ void loop() {
 
     // Display date on top
     display.setFont(&FreeSans18pt7b);
-    display.getTextBounds(dateFR, 0, 2, &x1, &y1, &w, &h);
+    display.getTextBounds(date, 0, 2, &x1, &y1, &w, &h);
     display.setCursor(400 - w / 2, 40);
-    display.print(dateFR);
+    display.print(date);
 
     // Current weather box
     x_current_box = 30;
@@ -497,9 +514,9 @@ void loop() {
     display.drawRect(x_current_box, y_current_box, current_box_w, 40, GxEPD_BLACK);
 
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Aujourd'hui", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(today_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_current_box + current_box_w / 2 - w / 2, y_current_box + 30);
-    display.print("Aujourd'hui");
+    display.print(today_text);
     displayCurrent(x_current_box, y_current_box, currentTemp, D0MinTemp, D0MaxTemp, weatherCodeToIcon(D0Code));
 
     // Forecast box for next 4 days
@@ -511,9 +528,9 @@ void loop() {
     display.drawRect(x_forecast_box, y_forecast_box, forecast_box_w, forecast_box_h, GxEPD_BLACK);
     display.drawRect(x_forecast_box, y_forecast_box, forecast_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Previsions", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(forecast_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_forecast_box + forecast_box_w / 2 - w / 2, y_forecast_box + 30);
-    display.print("Previsions");
+    display.print(forecast_text);
 
     displayForecast(x_forecast_box + 10, y_forecast_box + 40, (today + 1) % 7, D1MinTemp, D1MaxTemp, weatherCodeToIcon(D1Code));
     displayForecast(x_forecast_box + 120, y_forecast_box + 40, (today + 2) % 7, D2MinTemp, D2MaxTemp, weatherCodeToIcon(D2Code));
@@ -529,15 +546,15 @@ void loop() {
     display.drawRect(x_ha_box, y_ha_box, ha_box_w, ha_box_h, GxEPD_BLACK);
     display.drawRect(x_ha_box, y_ha_box, ha_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Capteurs Home Assistant", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(ha_sensor_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 2 - w / 2, y_ha_box + 30);
-    display.print("Capteurs Home Assistant");
+    display.print(ha_sensor_text);
 
     // Internal temperature from SHT4
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Interieur", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(indoor_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 6 - w / 2, y_ha_box + 70);
-    display.print("Interieur");
+    display.print(indoor_text);
     display.setFont(&FreeSans18pt7b);
     display.getTextBounds(String(sht4xTemperature, 1) + "`", 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 6 - w / 2, y_ha_box + 120);
@@ -546,9 +563,9 @@ void loop() {
 
     // Outdoor temperature (Home Assistant)
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Exterieur", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(outdoor_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 2 - w / 2, y_ha_box + 70);
-    display.print("Exterieur");
+    display.print(outdoor_text);
     display.setFont(&FreeSans18pt7b);
     display.getTextBounds(String(externalTemperatureSensor, 1) + "`", 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 2 - w / 2, y_ha_box + 120);
@@ -557,9 +574,9 @@ void loop() {
 
     // Greenhouse temperature (Home Assistant)
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Serre", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(other_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + 5 * ha_box_w / 6 - w / 2, y_ha_box + 70);
-    display.print("Serre");
+    display.print(other_text);
     display.setFont(&FreeSans18pt7b);
     display.getTextBounds(String(greenHouseTemperature, 1) + "`", 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + 5 * ha_box_w / 6 - w / 2, y_ha_box + 120);
@@ -575,17 +592,17 @@ void loop() {
     display.drawRect(x_bitcoin_box, y_bitcoin_box, bitcoin_box_w, bitcoin_box_h, GxEPD_BLACK);
     display.drawRect(x_bitcoin_box, y_bitcoin_box, bitcoin_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Crypto", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(crypto_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_bitcoin_box + bitcoin_box_w / 2 - w / 2, y_bitcoin_box + 30);
-    display.print("Crypto");
+    display.print(crypto_text);
     // Bitcoin
-    display.drawBitmap(x_bitcoin_box+10, y_bitcoin_box + 60, epd_bitmap3_allArray[0], 30, 30, GxEPD_BLACK);
+    display.drawBitmap(x_bitcoin_box + 10, y_bitcoin_box + 60, epd_bitmap3_allArray[0], 30, 30, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x_bitcoin_box + 40, y_bitcoin_box + 80);
     display.print(btc);
     display.print(" $");
     // Ethereum
-    display.drawBitmap(x_bitcoin_box+10, y_bitcoin_box + 95, epd_bitmap3_allArray[2], 30, 30, GxEPD_BLACK);
+    display.drawBitmap(x_bitcoin_box + 10, y_bitcoin_box + 95, epd_bitmap3_allArray[2], 30, 30, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x_bitcoin_box + 40, y_bitcoin_box + 120);
     display.print(eth);
@@ -601,9 +618,9 @@ void loop() {
     display.drawRect(x_battery_box, y_battery_box, battery_box_w, battery_box_h, GxEPD_BLACK);
     display.drawRect(x_battery_box, y_battery_box, battery_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
-    display.getTextBounds("Batterie", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(battery_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_battery_box + battery_box_w / 2 - w / 2, y_battery_box + 30);
-    display.print("Batterie");
+    display.print(battery_text);
     display.drawBitmap(x_battery_box + 10, y_battery_box + 70, epd_bitmap3_allArray[1], 40, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x_battery_box + 50, y_battery_box + 80);
@@ -611,7 +628,7 @@ void loop() {
     display.print(" %");
     display.setCursor(x_battery_box + 50, y_battery_box + 120);
     display.print(vBat);
-    display.print(" V");    
+    display.print(" V");
 
   } while (display.nextPage());
 
