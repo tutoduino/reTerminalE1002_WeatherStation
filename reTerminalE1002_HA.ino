@@ -92,28 +92,6 @@ int g_x_start, g_y_start;
 SensirionI2cSht4x sht4x;
 const float sht4xCalibration = -1;  // SHT4x calibration offset
 
-// 3.7 V Li-Ion battery voltage
-const float minVoltage = 3.0;
-const float maxVoltage = 4.2;
-
-/**
- * @brief Mapp float voltage to % battery charge.
- * @param x=Battery voltage
- * @param in_min=Battery min voltage
- * @param in_max=Battery max voltage
- * @return % of battery charge.
- */
-uint8_t mapFloat(float x, float in_min, float in_max) {
-  float val;
-  val = (x - in_min) * (100) / (in_max - in_min);
-  if (val < 0) {
-    val = 0;
-  } else if (val > 100) {
-    val = 100;
-  }
-  return (uint8_t)val;
-}
-
 /**
  * @brief Fetch temperature from Home Assistant REST API.
  * @param entityId - Home Assistant sensor entity (e.g., "sensor.lumi_lumi_weather_temperature")
@@ -369,6 +347,37 @@ float getBatteryVoltage() {
   return ((mv / 1000.0) * 2);  // Correction for voltage divider
 }
 
+
+/**
+ * @brief Calculates the battery charge percentage based on the measured voltage.
+ * @param batteryVoltage Measured battery voltage in volts.
+ * @return Estimated battery charge percentage (0 to 100%).
+ */
+int getBatteryPercent(float batteryVoltage) {
+  if (batteryVoltage > 4.20)
+    return 100;
+  else if (batteryVoltage > 3.96)
+    return 90;
+  else if (batteryVoltage > 3.91)
+    return 80;
+  else if (batteryVoltage > 3.85)
+    return 70;
+  else if (batteryVoltage > 3.80)
+    return 60;
+  else if (batteryVoltage > 3.75)
+    return 50;
+  else if (batteryVoltage > 3.60)
+    return 40;
+  else if (batteryVoltage > 3.40)
+    return 20;
+  else if (batteryVoltage > 3.20)
+    return 10;
+  else if (batteryVoltage > 3.00)
+    return 5;
+  else
+    return 0;
+}
+
 /**
  * @brief Arduino setup: serial, display, WiFi, sensors.
  */
@@ -441,7 +450,7 @@ void loop() {
 
   // Measure battery voltage
   vBat = getBatteryVoltage();
-  vBatPercentage = mapFloat(vBat, minVoltage, maxVoltage);
+  vBatPercentage = getBatteryPercent(vBat);
 
   // Get Bitcoind value
   int btc = getBTC();
