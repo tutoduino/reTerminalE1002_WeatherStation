@@ -4,7 +4,7 @@
  * 
  * - Fetches weather data from Open-Meteo API.
  * - Fetches Home Assistant sensor temperatures via REST API.
- * - Fetches Bitcoin price in USD from CoinGecko.
+ * - Fetches Bitcoin and Ethereum price in USD from CoinGecko.
  * - Displays all data on reTerminal E1002 7.3" color e-paper.
  * - Handles deep sleep and wake-up via button or timer.
  *   https://tutoduino.fr/
@@ -474,7 +474,7 @@ void loop() {
     return;
   }
 
-#if defined(LANGUAGE) && LANGUAGE == FR
+#ifdef LANGUAGE_FR
   String date = formatDateFR(localTime);  // French formatted date
 #else
   String date = formatDateEN(localTime);  // French formatted date
