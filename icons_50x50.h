@@ -225,7 +225,7 @@ const unsigned char epd_bitmap_icons8_peu_nuageux_2_50 [] PROGMEM = {
 };
 
 // Array of all bitmaps for convenience.
-const unsigned char* epd_bitmap_allArray[9] = {
+const unsigned char* epd_bitmap_allArray[] = {
 	epd_bitmap_icons8_eclair_dans_un_nuage_50,
 	epd_bitmap_icons8_averse_50,
 	epd_bitmap_icons8_brouillard_de_jour_50,
