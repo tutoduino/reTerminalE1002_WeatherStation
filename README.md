@@ -4,8 +4,8 @@ An advanced weather and information dashboard for the Seeed Studio reTerminal E1
 This project transforms the reTerminal E1002 into a multi‑source data station, combining local sensor readings with online APIs:
 - Retrieves weather forecasts from the Open-Meteo API.
 - Reads temperature sensors from Home Assistant via its REST API.
-- Fetches the Bitcoin price (USD) from CoinGecko.
-- Monitors the reTerminal’s battery level, internal temperature, and humidity via onboard sensors.
+- Fetches the Bitcoin and Ethereum price (USD) from CoinGecko.
+- Monitors the reTerminal’s battery level and internal temperature via onboard sensors.
 - Presents all information with clear icons and text on the high‑resolution color e‑paper display.
 - Implements deep sleep to save power, with wake‑up triggered by a button press or a timer.
  
