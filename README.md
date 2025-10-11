@@ -15,4 +15,4 @@ More details on this article:
 
 (English) https://tutoduino.fr/en/reterminal-e1002-arduino-ide/
 
-![reTerminal E1002 display](https://tutoduino.fr/ookoorsa/2025/10/reTerminal-Arduino-EN.jpg)
+![reTerminal E1002 display](https://tutoduino.fr/ookoorsa/2025/10/reTerminalE1002-WeatherStation-1080x540.jpg)
