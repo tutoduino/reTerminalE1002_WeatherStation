@@ -62,7 +62,6 @@
 #define GxEPD2_DRIVER_CLASS GxEPD2_750_GDEY075T7
 #define BOX_TEXT_COLOR GxEPD_WHITE
 #define BOX_FILL_COLOR GxEPD_BLACK
-
 #elif (EPD_SELECT == 1)
 #define GxEPD2_DISPLAY_CLASS GxEPD2_7C
 #define GxEPD2_DRIVER_CLASS GxEPD2_730c_GDEP073E01
@@ -498,8 +497,9 @@ void loop() {
 
   do {
     display.fillScreen(GxEPD_WHITE);
-    display.setTextColor(GxEPD_BLACK);
 
+    // Display the timestamp of the last weather update
+    display.setTextColor(GxEPD_BLACK);
     display.setFont(&FreeSans9pt7b);
     display.setCursor(600, 470);
     display.print(localTime);
