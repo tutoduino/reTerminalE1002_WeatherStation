@@ -4,7 +4,7 @@
  * 
  * - Fetches weather data from Open-Meteo API.
  * - Fetches Home Assistant sensor temperatures via REST API.
- * - Fetches Bitcoin price in USD from CoinGecko.
+ * - Fetches Bitcoin and Ethereum price in USD from CoinGecko.
  * - Displays all data on reTerminal E1002 7.3" color e-paper.
  * - Handles deep sleep and wake-up via button or timer.
  *   https://tutoduino.fr/
@@ -516,7 +516,9 @@ void loop() {
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(today_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_current_box + current_box_w / 2 - w / 2, y_current_box + 30);
+    display.setTextColor(GxEPD_WHITE);
     display.print(today_text);
+    display.setTextColor(GxEPD_BLACK);
     displayCurrent(x_current_box, y_current_box, currentTemp, D0MinTemp, D0MaxTemp, weatherCodeToIcon(D0Code));
 
     // Forecast box for next 4 days
@@ -530,7 +532,9 @@ void loop() {
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(forecast_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_forecast_box + forecast_box_w / 2 - w / 2, y_forecast_box + 30);
+    display.setTextColor(GxEPD_WHITE);
     display.print(forecast_text);
+    display.setTextColor(GxEPD_BLACK);
 
     displayForecast(x_forecast_box + 10, y_forecast_box + 40, (today + 1) % 7, D1MinTemp, D1MaxTemp, weatherCodeToIcon(D1Code));
     displayForecast(x_forecast_box + 120, y_forecast_box + 40, (today + 2) % 7, D2MinTemp, D2MaxTemp, weatherCodeToIcon(D2Code));
@@ -548,7 +552,9 @@ void loop() {
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(ha_sensor_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 2 - w / 2, y_ha_box + 30);
+    display.setTextColor(GxEPD_WHITE);
     display.print(ha_sensor_text);
+    display.setTextColor(GxEPD_BLACK);
 
     // Internal temperature from SHT4
     display.setFont(&FreeSans12pt7b);
@@ -594,7 +600,9 @@ void loop() {
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(crypto_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_bitcoin_box + bitcoin_box_w / 2 - w / 2, y_bitcoin_box + 30);
+    display.setTextColor(GxEPD_WHITE);
     display.print(crypto_text);
+    display.setTextColor(GxEPD_BLACK);
     // Bitcoin
     display.drawBitmap(x_bitcoin_box + 10, y_bitcoin_box + 60, epd_bitmap3_allArray[0], 30, 30, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
@@ -620,7 +628,9 @@ void loop() {
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(battery_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_battery_box + battery_box_w / 2 - w / 2, y_battery_box + 30);
+    display.setTextColor(GxEPD_WHITE);
     display.print(battery_text);
+    display.setTextColor(GxEPD_BLACK);
     display.drawBitmap(x_battery_box + 10, y_battery_box + 70, epd_bitmap3_allArray[1], 40, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.setCursor(x_battery_box + 50, y_battery_box + 80);
