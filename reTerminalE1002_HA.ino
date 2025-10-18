@@ -14,6 +14,7 @@
 #include <HTTPClient.h>
 #include <ArduinoJson.h>
 #include <GxEPD2_7C.h>
+#include <GxEPD2_BW.h>
 
 #include <FreeSans12pt7b_mod.h>
 #include <FreeSans18pt7b_mod.h>
@@ -54,14 +55,19 @@
 // Select the ePaper driver to use
 // 0: reTerminal E1001 (7.5'' B&W)
 // 1: reTerminal E1002 (7.3'' Color)
-#define EPD_SELECT 1
+#define EPD_SELECT 0
 
 #if (EPD_SELECT == 0)
 #define GxEPD2_DISPLAY_CLASS GxEPD2_BW
 #define GxEPD2_DRIVER_CLASS GxEPD2_750_GDEY075T7
+#define BOX_TEXT_COLOR GxEPD_WHITE
+#define BOX_FILL_COLOR GxEPD_BLACK
+
 #elif (EPD_SELECT == 1)
 #define GxEPD2_DISPLAY_CLASS GxEPD2_7C
 #define GxEPD2_DRIVER_CLASS GxEPD2_730c_GDEP073E01
+#define BOX_TEXT_COLOR GxEPD_WHITE
+#define BOX_FILL_COLOR GxEPD_GREEN
 #endif
 
 #define MAX_DISPLAY_BUFFER_SIZE 16000
@@ -509,14 +515,14 @@ void loop() {
     y_current_box = 60;
     current_box_w = 240;
     current_box_h = 210;
-    display.fillRect(x_current_box, y_current_box, current_box_w, 40, GxEPD_GREEN);
+    display.fillRect(x_current_box, y_current_box, current_box_w, 40, BOX_FILL_COLOR);
     display.drawRect(x_current_box, y_current_box, current_box_w, current_box_h, GxEPD_BLACK);
     display.drawRect(x_current_box, y_current_box, current_box_w, 40, GxEPD_BLACK);
 
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(today_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_current_box + current_box_w / 2 - w / 2, y_current_box + 30);
-    display.setTextColor(GxEPD_WHITE);
+    display.setTextColor(BOX_TEXT_COLOR);
     display.print(today_text);
     display.setTextColor(GxEPD_BLACK);
     displayCurrent(x_current_box, y_current_box, currentTemp, D0MinTemp, D0MaxTemp, weatherCodeToIcon(D0Code));
@@ -526,13 +532,13 @@ void loop() {
     y_forecast_box = 60;
     forecast_box_w = 480;
     forecast_box_h = 210;
-    display.fillRect(x_forecast_box, y_forecast_box, forecast_box_w, 40, GxEPD_GREEN);
+    display.fillRect(x_forecast_box, y_forecast_box, forecast_box_w, 40, BOX_FILL_COLOR);
     display.drawRect(x_forecast_box, y_forecast_box, forecast_box_w, forecast_box_h, GxEPD_BLACK);
     display.drawRect(x_forecast_box, y_forecast_box, forecast_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(forecast_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_forecast_box + forecast_box_w / 2 - w / 2, y_forecast_box + 30);
-    display.setTextColor(GxEPD_WHITE);
+    display.setTextColor(BOX_TEXT_COLOR);
     display.print(forecast_text);
     display.setTextColor(GxEPD_BLACK);
 
@@ -546,13 +552,13 @@ void loop() {
     y_ha_box = 300;
     ha_box_w = 400;
     ha_box_h = 150;
-    display.fillRect(x_ha_box, y_ha_box, ha_box_w, 40, GxEPD_GREEN);
+    display.fillRect(x_ha_box, y_ha_box, ha_box_w, 40, BOX_FILL_COLOR);
     display.drawRect(x_ha_box, y_ha_box, ha_box_w, ha_box_h, GxEPD_BLACK);
     display.drawRect(x_ha_box, y_ha_box, ha_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(ha_sensor_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 2 - w / 2, y_ha_box + 30);
-    display.setTextColor(GxEPD_WHITE);
+    display.setTextColor(BOX_TEXT_COLOR);
     display.print(ha_sensor_text);
     display.setTextColor(GxEPD_BLACK);
 
@@ -594,13 +600,13 @@ void loop() {
     y_bitcoin_box = 300;
     bitcoin_box_w = 150;
     bitcoin_box_h = 150;
-    display.fillRect(x_bitcoin_box, y_bitcoin_box, bitcoin_box_w, 40, GxEPD_GREEN);
+    display.fillRect(x_bitcoin_box, y_bitcoin_box, bitcoin_box_w, 40, BOX_FILL_COLOR);
     display.drawRect(x_bitcoin_box, y_bitcoin_box, bitcoin_box_w, bitcoin_box_h, GxEPD_BLACK);
     display.drawRect(x_bitcoin_box, y_bitcoin_box, bitcoin_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(crypto_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_bitcoin_box + bitcoin_box_w / 2 - w / 2, y_bitcoin_box + 30);
-    display.setTextColor(GxEPD_WHITE);
+    display.setTextColor(BOX_TEXT_COLOR);
     display.print(crypto_text);
     display.setTextColor(GxEPD_BLACK);
     // Bitcoin
@@ -622,13 +628,13 @@ void loop() {
     y_battery_box = 300;
     battery_box_w = 140;
     battery_box_h = 150;
-    display.fillRect(x_battery_box, y_battery_box, battery_box_w, 40, GxEPD_GREEN);
+    display.fillRect(x_battery_box, y_battery_box, battery_box_w, 40, BOX_FILL_COLOR);
     display.drawRect(x_battery_box, y_battery_box, battery_box_w, battery_box_h, GxEPD_BLACK);
     display.drawRect(x_battery_box, y_battery_box, battery_box_w, 40, GxEPD_BLACK);
     display.setFont(&FreeSans12pt7b);
     display.getTextBounds(battery_text, 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_battery_box + battery_box_w / 2 - w / 2, y_battery_box + 30);
-    display.setTextColor(GxEPD_WHITE);
+    display.setTextColor(BOX_TEXT_COLOR);
     display.print(battery_text);
     display.setTextColor(GxEPD_BLACK);
     display.drawBitmap(x_battery_box + 10, y_battery_box + 70, epd_bitmap3_allArray[1], 40, 40, GxEPD_BLACK);
