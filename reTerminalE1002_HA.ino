@@ -87,7 +87,7 @@ SPIClass hspi(HSPI);
 int D0MinTemp, D0MaxTemp, D1MinTemp, D1MaxTemp, D2MinTemp, D2MaxTemp, D3MinTemp, D3MaxTemp, D4MinTemp, D4MaxTemp;
 int D0Code, D1Code, D2Code, D3Code, D4Code;
 String localTime = "2025-01-01 00:00";
-int currentTemp;
+float currentTemp, currentPrecip;
 int g_x_start, g_y_start;
 
 // Object to manage onboard SHT4x sensor (I2C temperature/humidity)
@@ -163,12 +163,10 @@ int fetchWeatherData() {
   localTime = doc["current"]["time"].as<String>();
   D0Code = doc["current"]["weather_code"].as<int>();
   currentTemp = doc["current"]["temperature"].as<int>();
+  currentPrecip = doc["current"]["precipitation"].as<float>();
   D0MinTemp = doc["daily"]["temperature_2m_min"][0].as<int>();
   D0MaxTemp = doc["daily"]["temperature_2m_max"][0].as<int>();
-      Serial1.print(D0MaxTemp);
-
-  D1MinTemp = (int)doc["daily"]["temperature_2m_min"][1].as<float>();
-      Serial1.print(D1MinTemp);
+  D1MinTemp = doc["daily"]["temperature_2m_min"][1].as<int>();
   D1MaxTemp = doc["daily"]["temperature_2m_max"][1].as<int>();
   D1Code = doc["daily"]["weather_code"][1].as<int>();
   D2MinTemp = doc["daily"]["temperature_2m_min"][2].as<int>();
@@ -336,17 +334,20 @@ void displayForecast(int x, int y, int day, int min, int max, int iconNb) {
 /**
  * @brief Displays today's weather with large icon and temperature.
  */
-void displayCurrent(int x, int y, float current, int min, int max, int iconNb) {
+void displayCurrent(int x, int y, float currentTemp, float currentPrecip, int min, int max, int iconNb) {
   int16_t x1, y1;
   uint16_t w, h;
   String texte; // It is necessary to go through a String variable to display correctly negative temperatures
 
   display.drawBitmap(x + 30, y + 50, epd_bitmap2_allArray[iconNb], 100, 100, GxEPD_BLACK);
   display.setFont(&FreeSans24pt7b);
-  display.setCursor(x + 150, y + 130);
-  texte = String(current,0);
+  display.setCursor(x + 150, y + 100);
+  texte = String(currentTemp,0);
   display.print(texte);
   display.write(0x60);
+  display.setCursor(x + 150, y + 160);
+  texte = String(currentPrecip,1);
+  display.print(texte);
   display.setFont(&FreeSans12pt7b);
   display.getTextBounds(String(max) + "`", 0, 0, &x1, &y1, &w, &h);
   display.setCursor(x + 80 - w / 2, y + 170);
@@ -533,7 +534,7 @@ void loop() {
     display.setTextColor(BOX_TEXT_COLOR);
     display.print(today_text);
     display.setTextColor(GxEPD_BLACK);
-    displayCurrent(x_current_box, y_current_box, currentTemp, D0MinTemp, D0MaxTemp, weatherCodeToIcon(D0Code));
+    displayCurrent(x_current_box, y_current_box, currentTemp, currentPrecip, D0MinTemp, D0MaxTemp, weatherCodeToIcon(D0Code));
 
     // Forecast box for next 4 days
     x_forecast_box = 300;
