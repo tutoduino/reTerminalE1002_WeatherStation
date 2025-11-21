@@ -55,7 +55,7 @@
 // Select the ePaper driver to use
 // 0: reTerminal E1001 (7.5'' B&W)
 // 1: reTerminal E1002 (7.3'' Color)
-#define EPD_SELECT 0
+#define EPD_SELECT 1
 
 #if (EPD_SELECT == 0)
 #define GxEPD2_DISPLAY_CLASS GxEPD2_BW
@@ -82,8 +82,6 @@ GxEPD2_DISPLAY_CLASS<GxEPD2_DRIVER_CLASS, MAX_HEIGHT(GxEPD2_DRIVER_CLASS)>
 
 // Global variable for SPI communication
 SPIClass hspi(HSPI);
-
-
 
 // Global weather variables
 int D0MinTemp, D0MaxTemp, D1MinTemp, D1MaxTemp, D2MinTemp, D2MaxTemp, D3MinTemp, D3MaxTemp, D4MinTemp, D4MaxTemp;
@@ -167,7 +165,10 @@ int fetchWeatherData() {
   currentTemp = doc["current"]["temperature"].as<int>();
   D0MinTemp = doc["daily"]["temperature_2m_min"][0].as<int>();
   D0MaxTemp = doc["daily"]["temperature_2m_max"][0].as<int>();
-  D1MinTemp = doc["daily"]["temperature_2m_min"][1].as<int>();
+      Serial1.print(D0MaxTemp);
+
+  D1MinTemp = (int)doc["daily"]["temperature_2m_min"][1].as<float>();
+      Serial1.print(D1MinTemp);
   D1MaxTemp = doc["daily"]["temperature_2m_max"][1].as<int>();
   D1Code = doc["daily"]["weather_code"][1].as<int>();
   D2MinTemp = doc["daily"]["temperature_2m_min"][2].as<int>();
@@ -312,6 +313,8 @@ int weatherCodeToIcon(int weatherCode) {
 void displayForecast(int x, int y, int day, int min, int max, int iconNb) {
   int16_t x1, y1;
   uint16_t w, h;
+  String texte; // It is necessary to go through a String variable to display correctly negative temperatures
+
   display.drawBitmap(x + 30, y + 50, epd_bitmap_allArray[iconNb], 50, 50, GxEPD_BLACK);
   display.setFont(&FreeSans12pt7b);
   display.getTextBounds(days[day], x, y, &x1, &y1, &w, &h);
@@ -320,11 +323,13 @@ void displayForecast(int x, int y, int day, int min, int max, int iconNb) {
   display.setFont(&FreeSans12pt7b);
   display.getTextBounds(String(max) + "`", x, y, &x1, &y1, &w, &h);
   display.setCursor(x + 55 - w / 2, y + 130);
-  display.print(max, 0);
+  texte = String(max);
+  display.print(texte);
   display.write(0x60);
   display.getTextBounds(String(min) + "`", x, y, &x1, &y1, &w, &h);
   display.setCursor(x + 55 - w / 2, y + 160);
-  display.print(min, 0);
+  texte = String(min);
+  display.print(texte);
   display.write(0x60);
 }
 
@@ -334,21 +339,24 @@ void displayForecast(int x, int y, int day, int min, int max, int iconNb) {
 void displayCurrent(int x, int y, float current, int min, int max, int iconNb) {
   int16_t x1, y1;
   uint16_t w, h;
+  String texte; // It is necessary to go through a String variable to display correctly negative temperatures
+
   display.drawBitmap(x + 30, y + 50, epd_bitmap2_allArray[iconNb], 100, 100, GxEPD_BLACK);
   display.setFont(&FreeSans24pt7b);
   display.setCursor(x + 150, y + 130);
-  display.print(current, 0);
+  texte = String(current,0);
+  display.print(texte);
   display.write(0x60);
   display.setFont(&FreeSans12pt7b);
-
   display.getTextBounds(String(max) + "`", 0, 0, &x1, &y1, &w, &h);
   display.setCursor(x + 80 - w / 2, y + 170);
-  display.print(max, 0);
+  texte = String(max);
+  display.print(texte);
   display.write(0x60);
-
   display.getTextBounds(String(min) + "`", 0, 0, &x1, &y1, &w, &h);
   display.setCursor(x + 80 - w / 2, y + 200);
-  display.print(min, 0);
+  texte = String(min);
+  display.print(texte);
   display.write(0x60);
 }
 
@@ -488,7 +496,7 @@ void loop() {
   int today = dayOfTheWeek(localTime.substring(0, 4).toInt(), localTime.substring(5, 7).toInt(), localTime.substring(8, 10).toInt());
 
   // Fetch Home Assistant sensor states
-  internalTemperatureSensor = getHomeAssistantSensorState("sensor.tutoduino_esp32c6tempsensor_temperature");
+  internalTemperatureSensor = getHomeAssistantSensorState("sensor.tz3000_bgsigers_ts0201_temperature");
   externalTemperatureSensor = getHomeAssistantSensorState("sensor.lumi_lumi_weather_temperature");
   greenHouseTemperature = getHomeAssistantSensorState("sensor.lumi_lumi_weather_temperature_2");
 
@@ -568,9 +576,9 @@ void loop() {
     display.setCursor(x_ha_box + ha_box_w / 6 - w / 2, y_ha_box + 70);
     display.print(indoor_text);
     display.setFont(&FreeSans18pt7b);
-    display.getTextBounds(String(sht4xTemperature, 1) + "`", 0, 0, &x1, &y1, &w, &h);
+    display.getTextBounds(String(internalTemperatureSensor, 1) + "`", 0, 0, &x1, &y1, &w, &h);
     display.setCursor(x_ha_box + ha_box_w / 6 - w / 2, y_ha_box + 120);
-    display.print(sht4xTemperature, 1);
+    display.print(internalTemperatureSensor, 1);
     display.write(0x60);
 
     // Outdoor temperature (Home Assistant)
@@ -650,7 +658,7 @@ void loop() {
 
   display.hibernate();
   delay(1000);
-  uint64_t sleepTime = 60 * 60 * uS_TO_S_FACTOR;  // 60 minutes
+  uint64_t sleepTime = 30 * 60 * uS_TO_S_FACTOR;  // 30 minutes
   esp_error = esp_sleep_enable_timer_wakeup(sleepTime);
   if (esp_error != ESP_OK) {
     Serial1.print("Error to enter deep sleep: ");
